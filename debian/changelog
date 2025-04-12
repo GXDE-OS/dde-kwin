@@ -1,9 +1,10 @@
-dde-kwin (5.6.10.3) UNRELEASED; urgency=medium
+dde-kwin (5.6.11) UNRELEASED; urgency=medium
 
   * Support deepin kwin 5.27
   * Support loong
+  * 支持设置 dtk5 圆角大小
 
- -- gfdgd_xi <3025613752@qq.com>  Sun, 10 Nov 2024 16:19:55 +0800
+ -- gfdgd_xi <3025613752@qq.com>  Sat, 12 Apr 2025 22:59:09 +0800
 
 dde-kwin (5.6.6-1) unstable; urgency=medium
 
