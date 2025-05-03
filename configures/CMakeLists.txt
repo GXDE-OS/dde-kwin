@@ -1,4 +1,4 @@
-option(USE_KWIN_NO_SCALE "use deepin LD_PRELOAD kwin_no_scale" OFF) # deepin v25 don't need kwin_no_scale
+option(USE_KWIN_NO_SCALE "use deepin LD_PRELOAD kwin_no_scale" ON) # deepin v25 don't need kwin_no_scale
 
 install(
     FILES
