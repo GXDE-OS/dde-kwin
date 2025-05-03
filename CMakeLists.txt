@@ -22,6 +22,7 @@ add_definitions(
 )
 
 option(USE_SCRIPTS "use scripts" ON)
+option(USE_DEEPIN_WM_DBUS "use deepin-wm dbus service" ON)
 
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "mips64")
     set(CMAKE_CXX_FLAGS "-O3 -ftree-vectorize -march=loongson3a -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions  -mloongson-ext2 -mloongson-mmi -Wl,--as-needed,-O1 -fno-stack-protector")
@@ -75,6 +76,10 @@ if (KWIN_VERSION)
 endif()
 
 add_subdirectory(configures)
+
+if (USE_DEEPIN_WM_DBUS)
+  add_subdirectory(deepin-wm-dbus)
+endif()
 
 if (USE_SCRIPTS)
   add_subdirectory(scripts)
