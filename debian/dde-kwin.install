@@ -1,7 +1,7 @@
 #etc/xdg/kdeglobals
 #etc/xdg/kglobalshortcutsrc
-etc/xdg/klaunchrc
-etc/xdg/kwinrc
+#etc/xdg/klaunchrc
+#etc/xdg/kwinrc
 #etc/xdg/deepin-kwinrulesrc
 usr/bin/deepin-wm-dbus
 #usr/bin/kwin_no_scale
