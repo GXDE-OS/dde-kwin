@@ -42,6 +42,7 @@ Architecture: any
 Depends: ${misc:Depends},
  deepin-kwin-x11 (>= 4:6.0.0),
  deepin-kwin-wayland (>= 4:6.0.0),
+Conflicts:
  gxde-kglobalacceld,
 Breaks: deepin-kwin-data (<< 4:6.0.0~),
 Description: KWin configures/plugins on the DDE
