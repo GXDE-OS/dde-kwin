@@ -9,6 +9,8 @@ if [ -n "$HOME" ];then
 fi
 
 EXECUTE_PATH=$(cd `dirname $0`; pwd)
+# 启用快捷键
+setsid /usr/lib/*/libexec/kglobalacceld &
 # 禁用没有什么意义的动画
 dde-dconfig set org.kde.kwin -r org.kde.kwin.compositing user_type -v 2
 # 设置 dtk5 应用圆角
