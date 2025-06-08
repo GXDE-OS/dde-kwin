@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ -n "$HOME" ];then
-    if [[ "$(grep -r deepin-kwin $HOME/.config/kglobalshortcutsrc)" != "" ]]; then
+    if [ "$(grep -r deepin-kwin $HOME/.config/kglobalshortcutsrc)" != "" ]; then
         # 如果是原先旧 deepin-kwin 的配置文件，则需要替换为新的，不然快捷方式无法使用
         cp /etc/xdg/kglobalshortcutsrc $HOME/.config/kglobalshortcutsrc
     fi
