@@ -5,6 +5,8 @@ if [ -n "$HOME" ];then
 fi
 
 EXECUTE_PATH=$(cd `dirname $0`; pwd)
+# 禁用没有什么意义的动画
+dde-dconfig set org.kde.kwin -r org.kde.kwin.compositing user_type -v 2
 # 设置 dtk5 应用圆角
 radius=$(dbus-send --print-reply=literal --session --dest=com.gxde.daemon.personalization /com/gxde/daemon/personalization com.gxde.daemon.personalization.Radius | awk '/int32/ {print $2}')
 /usr/libexec/dtk5/DGui/bin/deepin-gui-settings --set "DTK/WindowRadius" -i "$radius"
