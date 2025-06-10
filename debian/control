@@ -37,18 +37,24 @@ Build-Depends: debhelper (>=9),
 Standards-Version: 3.9.8
 Homepage: https://github.com/linuxdeepin/dde-kwin
 
-Package: dde-kwin
+Package: gxde-wm-shim
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  deepin-kwin-x11, deepin-kwin-wayland, plasma-framework, libkf5globalaccel-bin,
  qml-module-qtquick-controls2, qml-module-qtquick-templates2, libdtkgui5-bin
-Description: KWin configures/plugins on the DDE
+Conflicts: dde-kwin
+Replaces: dde-kwin
+Provides: dde-kwin
+Description: KWin configures/plugins on the GXDE
  Let kwin work well in the Deepin Desktop Environment.
 
-Package: dde-kwin-dev
+Package: gxde-wm-shim-dev
 Section: libdevel
 Architecture: any
+Conflicts: dde-kwin-dev
+Provides: dde-kwin-dev
+Replaces: dde-kwin-dev
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Developer package of dde-kwin
+Description: Developer package of gxde-wm-shim
  Provide dde-kwin plugin implementation basis files.
 
