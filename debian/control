@@ -42,7 +42,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  gxde-kwin-x11, gxde-kwin-wayland, plasma-framework, libkf5globalaccel-bin,
  qml-module-qtquick-controls2, qml-module-qtquick-templates2, libdtkgui5-bin
-Conflicts: dde-kwin
+Conflicts: dde-kwin (>> 5.6.11-1)
 Replaces: dde-kwin
 Provides: dde-kwin
 Description: KWin configures/plugins on the GXDE
@@ -51,7 +51,7 @@ Description: KWin configures/plugins on the GXDE
 Package: gxde-wm-shim-dev
 Section: libdevel
 Architecture: any
-Conflicts: dde-kwin-dev
+Conflicts: dde-kwin-dev (>> 5.6.11-1)
 Provides: dde-kwin-dev
 Replaces: dde-kwin-dev
 Depends: ${shlibs:Depends}, ${misc:Depends}
