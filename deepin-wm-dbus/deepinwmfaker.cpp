@@ -1004,18 +1004,22 @@ bool DeepinWMFaker::maybeShowWarningDialog()
 
 void DeepinWMFaker::ShowAllWindow()
 {
-    if (maybeShowWarningDialog())
+    // 因 depein kwin 5.27 不支持应用快速切换，所以使用切换工作区功能等效替代
+    ShowWorkspace();
+    /*if (maybeShowWarningDialog())
         return;
 
-    Q_EMIT ShowAllWindowChanged();
+    Q_EMIT ShowAllWindowChanged();*/
 }
 
 void DeepinWMFaker::ShowWindow()
 {
-    if (maybeShowWarningDialog())
+    // 因 depein kwin 5.27 不支持应用快速切换，所以使用切换工作区功能等效替代
+    ShowWorkspace();
+    /*if (maybeShowWarningDialog())
         return;
 
-    Q_EMIT ShowWindowChanged();
+    Q_EMIT ShowWindowChanged();*/
 }
 
 void DeepinWMFaker::ShowWorkspace()
