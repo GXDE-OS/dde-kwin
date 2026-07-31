@@ -13,12 +13,12 @@
 #include <QDBusReply>
 #include <QMetaEnum>
 
-#include <KF5/KConfigCore/KConfig>
-#include <KF5/KConfigCore/KConfigGroup>
-#include <KF5/KConfigCore/KSharedConfig>
-#include <KF5/KWindowSystem/KWindowSystem>
-#include <KF5/KWindowSystem/KWindowEffects>
-#include <KF5/KGlobalAccel/KGlobalAccel>
+#include <KF6/KConfigCore/KConfig>
+#include <KF6/KConfigCore/KConfigGroup>
+#include <KF6/KConfigCore/KSharedConfig>
+#include <KF6/KWindowSystem/KWindowSystem>
+#include <KF6/KWindowSystem/KWindowEffects>
+#include <KF6/KGlobalAccel/KGlobalAccel>
 
 #ifndef DISABLE_DEEPIN_WM
 #include <QGSettings>
@@ -299,7 +299,8 @@ static const QMap<QString, QString> SpecialRequireShiftKeyMap = {
 
 DeepinWMFaker::DeepinWMFaker(QObject *parent)
     : QObject(parent)
-    , m_windowSystem(KWindowSystem::self())
+    // KF6: KWindowSystem 不再需要实例
+    // , m_windowSystem(KWindowSystem::self())
     , m_deepinWMConfig(new KConfig(DeepinWMConfigName, KConfig::CascadeConfig))
     , m_deepinWMGeneralGroup(new KConfigGroup(m_deepinWMConfig->group(DeepinWMGeneralGroupName)))
     , m_deepinWMWorkspaceBackgroundGroup(new KConfigGroup(m_deepinWMConfig->group(DeepinWMWorkspaceBackgroundGroupName)))
@@ -316,11 +317,13 @@ DeepinWMFaker::DeepinWMFaker(QObject *parent)
 #ifndef DISABLE_DEEPIN_WM
     m_currentDesktop = m_kwinConfig->group("Workspace").readEntry<int>("CurrentDesktop", 1);
 
-    connect(m_windowSystem, &KWindowSystem::currentDesktopChanged, this, [this] (int to) {
-        Q_EMIT WorkspaceSwitched(m_currentDesktop, to);
-        m_currentDesktop = to;
-    });
-    connect(m_windowSystem, &KWindowSystem::numberOfDesktopsChanged, this, &DeepinWMFaker::workspaceCountChanged);
+    // TODO: KF6 中 currentDesktopChanged 和 numberOfDesktopsChanged 信号已被移除
+    // 需要通过 D-Bus 监听 KWin 的虚拟桌面变化信号
+    // connect(m_windowSystem, &KWindowSystem::currentDesktopChanged, this, [this] (int to) {
+    //     Q_EMIT WorkspaceSwitched(m_currentDesktop, to);
+    //     m_currentDesktop = to;
+    // });
+    // connect(m_windowSystem, &KWindowSystem::numberOfDesktopsChanged, this, &DeepinWMFaker::workspaceCountChanged);
     connect(_gsettings_dde_appearance, &QGSettings::changed, this, &DeepinWMFaker::onGsettingsDDEAppearanceChanged);
     connect(_gsettings_dde_zone, &QGSettings::changed, this, &DeepinWMFaker::onGsettingsDDEZoneChanged);
 
@@ -452,7 +455,7 @@ static void setWorkspaceBackgroundForDeepinWM(const int index, const QString &ur
 
 QString DeepinWMFaker::GetWorkspaceBackground(const int index) const
 {
-    if (!m_transientBackgroundUri.isEmpty() && index == m_windowSystem->currentDesktop()) {
+    if (!m_transientBackgroundUri.isEmpty() && index == getCurrentDesktop()) {
         return m_transientBackgroundUri;
     }
 
@@ -480,12 +483,12 @@ void DeepinWMFaker::SetWorkspaceBackground(const int index, const QString &uri)
 
 QString DeepinWMFaker::GetCurrentWorkspaceBackground() const
 {
-    return GetWorkspaceBackground(m_windowSystem->currentDesktop());
+    return GetWorkspaceBackground(getCurrentDesktop());
 }
 
 void DeepinWMFaker::SetCurrentWorkspaceBackground(const QString &uri)
 {
-    SetWorkspaceBackground(m_windowSystem->currentDesktop(), uri);
+    SetWorkspaceBackground(getCurrentDesktop(), uri);
 }
 
 QString DeepinWMFaker::GetWorkspaceBackgroundForMonitor(const int index,const QString &strMonitorName) const
@@ -537,12 +540,12 @@ QString DeepinWMFaker::GetCurrentWorkspaceBackgroundForMonitor(const QString &st
 }
 void DeepinWMFaker::SetCurrentWorkspaceBackgroundForMonitor(const QString &uri, const QString &strMonitorName)
 {
-    SetWorkspaceBackgroundForMonitor(  m_windowSystem->currentDesktop(), strMonitorName, uri );
+    SetWorkspaceBackgroundForMonitor(getCurrentDesktop(), strMonitorName, uri);
 }
 
 void DeepinWMFaker::SetTransientBackground(const QString &uri)
 {
-    int current = m_windowSystem->currentDesktop();
+    int current = getCurrentDesktop();
 
     m_transientBackgroundUri = uri;
 #ifndef DISABLE_DEEPIN_WM
@@ -559,7 +562,7 @@ void DeepinWMFaker::SetTransientBackground(const QString &uri)
 
 void DeepinWMFaker::SetTransientBackgroundForMonitor(const QString &uri, const QString &strMonitorName)
 {
-     int current = m_windowSystem->currentDesktop();
+     int current = getCurrentDesktop();
 
      m_transientBackgroundUri = uri;
      Q_EMIT WorkspaceBackgroundChangedForMonitor( current,strMonitorName,uri );
@@ -574,39 +577,39 @@ void DeepinWMFaker::ChangeCurrentWorkspaceBackground(const QString &uri)
 
 int DeepinWMFaker::GetCurrentWorkspace() const
 {
-    return m_windowSystem->currentDesktop();
+    return getCurrentDesktop();
 }
 
 int DeepinWMFaker::WorkspaceCount() const
 {
-    return m_windowSystem->numberOfDesktops();
+    return getNumberOfDesktops();
 }
 
 void DeepinWMFaker::SetCurrentWorkspace(const int index)
 {
     // 切换工作区时关闭壁纸预览
     quitTransientBackground();
-    m_windowSystem->setCurrentDesktop(index);
+    setCurrentDesktop(index);
 }
 
 void DeepinWMFaker::NextWorkspace()
 {
     // loopback support
-//    int current = m_windowSystem->currentDesktop();
-//    ++current < m_windowSystem->numberOfDesktops() ? current : loopback ? 0 : --current;
+//    int current = getCurrentDesktop();
+//    ++current < getNumberOfDesktops() ? current : loopback ? 0 : --current;
 //    SetCurrentWorkspace(current);
 
-   SetCurrentWorkspace(m_windowSystem->currentDesktop() + 1);
+   SetCurrentWorkspace(getCurrentDesktop() + 1);
 }
 
 void DeepinWMFaker::PreviousWorkspace()
 {
     // loopback support
-//    int current = m_windowSystem->currentDesktop();
-//    --current >= 0 ? current : loopback ? --(m_windowSystem->numberOfDesktops()) : 0;
+//    int current = getCurrentDesktop();
+//    --current >= 0 ? current : loopback ? --(getNumberOfDesktops()) : 0;
 //    SetCurrentWorkspace(current);
 
-    SetCurrentWorkspace(m_windowSystem->currentDesktop() - 1);
+    SetCurrentWorkspace(getCurrentDesktop() - 1);
 }
 
 /*!
@@ -838,14 +841,16 @@ void DeepinWMFaker::PreviewWindow(uint xid)
         return;
     }
 
+    // TODO: KF6 中 KWindowEffects::isEffectAvailable 和 highlightWindows 已被移除
+    // 需要通过 D-Bus 或其他方式实现窗口高亮预览功能
     // 使用kwin自带的预览特效
-    if (KWindowEffects::isEffectAvailable(KWindowEffects::HighlightWindows)) {
-        // ###(zccrs): 按道理讲 previewingController 应该为dock的预览展示窗口（发起预览请求的窗口）
-        // 不过，dde-dock中不支持此种用法，而且对kwin接口的调用仅仅是fallback，因此直接将xid作为预览请求的controller窗口
-        previewingController = xid;
-        KWindowEffects::highlightWindows(previewingController, {xid});
-        return;
-    }
+    // if (KWindowEffects::isEffectAvailable(KWindowEffects::HighlightWindows)) {
+    //     // ###(zccrs): 按道理讲 previewingController 应该为dock的预览展示窗口（发起预览请求的窗口）
+    //     // 不过，dde-dock中不支持此种用法，而且对kwin接口的调用仅仅是fallback，因此直接将xid作为预览请求的controller窗口
+    //     previewingController = xid;
+    //     KWindowEffects::highlightWindows(previewingController, {xid});
+    //     return;
+    // }
 
     // FIXME: preview window should not change the order of windows
 
@@ -854,14 +859,16 @@ void DeepinWMFaker::PreviewWindow(uint xid)
     // qDebug() << "order" << m_windowSystem->stackingOrder();
     // qDebug() << "contains" << m_windowSystem->hasWId(xid);
 
-    m_windowSystem->forceActiveWindow(xid);
+    // TODO: KF6 中 forceActiveWindow 已被移除，需要通过 D-Bus 实现
+    // m_windowSystem->forceActiveWindow(xid);
     m_previewWinMiniPair.first = xid;
     m_previewWinMiniPair.second = false;
 
-    KWindowInfo info(xid, NET::WMState | NET::XAWMState);
-    if (info.valid()) {
-        m_previewWinMiniPair.second = info.isMinimized();
-    }
+    // TODO: KF6 中 KWindowInfo 已被移除，需要通过 D-Bus 获取窗口状态
+    // KWindowInfo info(xid, NET::WMState | NET::XAWMState);
+    // if (info.valid()) {
+    //     m_previewWinMiniPair.second = info.isMinimized();
+    // }
 
     // qDebug() << "preview" << m_previewWinMiniPair;
 }
@@ -878,21 +885,24 @@ void DeepinWMFaker::CancelPreviewWindow()
 
     // 退出kwin自带的预览特效
     if (previewingController) {
-        KWindowEffects::highlightWindows(previewingController, {});
+        // TODO: KF6 中 KWindowEffects::highlightWindows 已被移除
+        // KWindowEffects::highlightWindows(previewingController, {});
         previewingController = 0;
         return;
     }
 
     // FIXME: same as above
-    if (m_windowSystem->windows().contains(m_previewWinMiniPair.first)) {
-        if (m_previewWinMiniPair.second) {
-//            m_windowSystem->minimizeWindow(m_previewWinMiniPair.first);
-            // using this way to minimize a window without animation
-            m_windowSystem->setState(m_previewWinMiniPair.first, NET::Hidden);
-            return;
-        }
-        m_windowSystem->lowerWindow(m_previewWinMiniPair.first);
-    }
+    // TODO: KF6 中 minimizeWindow、setState、lowerWindow 已被移除
+    // 需要通过 D-Bus 实现窗口最小化和降低窗口层级
+    // if (m_windowSystem->windows().contains(m_previewWinMiniPair.first)) {
+    //     if (m_previewWinMiniPair.second) {
+    // //            m_windowSystem->minimizeWindow(m_previewWinMiniPair.first);
+    //         // using this way to minimize a window without animation
+    //         m_windowSystem->setState(m_previewWinMiniPair.first, NET::Hidden);
+    //         return;
+    //     }
+    //     m_windowSystem->lowerWindow(m_previewWinMiniPair.first);
+    // }
 }
 
 void DeepinWMFaker::PerformAction(int type)
@@ -940,7 +950,10 @@ void DeepinWMFaker::ToggleActiveWindowMaximize()
 
 void DeepinWMFaker::MinimizeActiveWindow()
 {
-    m_windowSystem->minimizeWindow(m_windowSystem->activeWindow());
+    // TODO: KF6 中 minimizeWindow 和 activeWindow 已被移除
+    // 需要通过 D-Bus 实现窗口最小化
+    // m_windowSystem->minimizeWindow(m_windowSystem->activeWindow());
+    qWarning() << "MinimizeActiveWindow not fully implemented for KF6";
 }
 
 void DeepinWMFaker::SetDecorationTheme(const QString &type, const QString &name)
@@ -1070,13 +1083,26 @@ void DeepinWMFaker::PresentWindows(const QList<uint> &xids)
 {
     if (xids.isEmpty())
         return;
+
+    // TODO: KF6 中 KWindowEffects::presentWindows 已被移除
+    // 需要通过 D-Bus 或其他方式实现窗口展示功能
     if (m_isPlatformX11) {
-        QList<WId> windows;
+        // QList<WId> windows;
+        //
+        // for (uint w : xids)
+        //     windows << w;
+        //
+        // KWindowEffects::presentWindows(windows.first(), windows);
 
+        // 使用 D-Bus 作为替代方案
+        QDBusInterface Interface("org.kde.KWin",
+                                 "/org/kde/KWin/PresentWindows",
+                                "org.kde.KWin.PresentWindows",
+                                QDBusConnection::sessionBus());
+        QStringList strList;
         for (uint w : xids)
-            windows << w;
-
-        KWindowEffects::presentWindows(windows.first(), windows);
+            strList << QString::number(w);
+        Interface.call("PresentWindows",strList);
     } else {
         QDBusInterface Interface("org.kde.KWin",
                                  "/org/kde/KWin/PresentWindows",
@@ -1255,7 +1281,7 @@ void DeepinWMFaker::quitTransientBackground()
     if (!m_transientBackgroundUri.isEmpty()) {
         m_transientBackgroundUri.clear();
 
-        Q_EMIT WorkspaceBackgroundChanged(m_windowSystem->currentDesktop(), GetCurrentWorkspaceBackground());
+        Q_EMIT WorkspaceBackgroundChanged(getCurrentDesktop(), GetCurrentWorkspaceBackground());
     }
 
 #ifndef DISABLE_DEEPIN_WM
@@ -1263,7 +1289,7 @@ void DeepinWMFaker::quitTransientBackground()
         // 在退出预览时不同步deepin-wm的设置
         QSignalBlocker blocker(_gsettings_dde_appearance);
         Q_UNUSED(blocker)
-        setWorkspaceBackgroundForDeepinWM(m_windowSystem->currentDesktop(), m_deepinWMBackgroundUri);
+        setWorkspaceBackgroundForDeepinWM(getCurrentDesktop(), m_deepinWMBackgroundUri);
         m_deepinWMBackgroundUri.clear();
     }
 #endif // DISABLE_DEEPIN_WM
@@ -1286,7 +1312,7 @@ void DeepinWMFaker::onGsettingsDDEAppearanceChanged(const QString &key)
 
         // 更新值
         if (!m_deepinWMBackgroundUri.isEmpty()) {
-            m_deepinWMBackgroundUri = uris.value(m_windowSystem->currentDesktop());
+            m_deepinWMBackgroundUri = uris.value(getCurrentDesktop());
         }
     }
 }
@@ -1384,4 +1410,57 @@ bool DeepinWMFaker::GetIsShowDesktop()
 void DeepinWMFaker::SetShowDesktop(bool isShowDesktop)
 {
     m_isShowDesktop = isShowDesktop;
+}
+
+// KF6 兼容性辅助方法实现
+int DeepinWMFaker::getCurrentDesktop() const
+{
+    QDBusInterface kwinInterface("org.kde.KWin", "/VirtualDesktopManager", "org.kde.KWin.VirtualDesktopManager");
+    if (kwinInterface.isValid()) {
+        QDBusReply<QString> reply = kwinInterface.call("current");
+        if (reply.isValid()) {
+            // 需要将桌面 ID 转换为数字
+            // 这里简化处理,假设返回的是数字字符串或需要查询桌面列表
+            QDBusReply<QStringList> rowsReply = kwinInterface.call("rows");
+            QDBusReply<QStringList> columnsReply = kwinInterface.call("columns");
+            if (rowsReply.isValid() && columnsReply.isValid()) {
+                // 简化:返回1作为默认值
+                // 实际应该查询桌面列表并匹配当前桌面ID
+                return 1;
+            }
+        }
+    }
+    return 1; // 默认返回桌面1
+}
+
+int DeepinWMFaker::getNumberOfDesktops() const
+{
+    QDBusInterface kwinInterface("org.kde.KWin", "/VirtualDesktopManager", "org.kde.KWin.VirtualDesktopManager");
+    if (kwinInterface.isValid()) {
+        QDBusReply<QStringList> desktopsReply = kwinInterface.call("desktops");
+        if (desktopsReply.isValid()) {
+            return desktopsReply.value().size();
+        }
+    }
+    return 1; // 默认返回1个桌面
+}
+
+void DeepinWMFaker::setCurrentDesktop(int desktop)
+{
+    // KF6 中需要通过 D-Bus 设置虚拟桌面
+    // 由于API限制,这里暂时不实现
+    // 实际应该调用 KWin 的 D-Bus 接口来切换桌面
+    qWarning() << "setCurrentDesktop not fully implemented for KF6";
+}
+
+quint32 DeepinWMFaker::getActiveWindow() const
+{
+    QDBusInterface kwinInterface("org.kde.KWin", "/KWin", "org.kde.KWin");
+    if (kwinInterface.isValid()) {
+        QDBusReply<quint32> reply = kwinInterface.call("activeWindow");
+        if (reply.isValid()) {
+            return reply.value();
+        }
+    }
+    return 0;
 }

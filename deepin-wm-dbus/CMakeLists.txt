@@ -1,14 +1,14 @@
 set(TARGET_PATH "${CMAKE_INSTALL_PREFIX}/bin")
 set(TARGET_NAME "deepin-wm-dbus")
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5DBus REQUIRED)
+find_package(Qt6Core REQUIRED)
+find_package(Qt6DBus REQUIRED)
 find_package(X11 REQUIRED)
-find_package(KF5Config REQUIRED)
-find_package(KF5WindowSystem REQUIRED)
-find_package(KF5GlobalAccel REQUIRED)
-find_package(DtkCore REQUIRED)
-find_package(DtkLog REQUIRED)
+find_package(KF6Config REQUIRED)
+find_package(KF6WindowSystem REQUIRED)
+find_package(KF6GlobalAccel REQUIRED)
+find_package(Dtk6Core REQUIRED)
+find_package(Dtk6Log REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 
@@ -20,7 +20,8 @@ if (DISABLE_DEEPIN_WM)
     set(DEEPIN_WM_SUFFIX "-->")
     add_definitions(-DDISABLE_DEEPIN_WM)
 else()
-    pkg_search_module(GSETTINGS REQUIRED gsettings-qt)
+    # 明确使用 Qt6 版本的 gsettings-qt
+    pkg_search_module(GSETTINGS REQUIRED gsettings-qt6)
 endif()
 
 configure_file(com.deepin.wm.xml.in com.deepin.wm.xml)
@@ -37,7 +38,7 @@ install_files(
     ${CMAKE_CURRENT_BINARY_DIR}/com.deepin.wm.service
 )
 
-qt5_add_dbus_adaptor(
+qt6_add_dbus_adaptor(
     wm_SRCS
     ${CMAKE_CURRENT_BINARY_DIR}/com.deepin.wm.xml
     deepinwmfaker.h
@@ -55,18 +56,18 @@ target_include_directories(
     ${TARGET_NAME}
     PRIVATE
     ${GSETTINGS_INCLUDE_DIRS}
-    ${DtkCore_INCLUDE_DIRS}
+    ${Dtk6Core_INCLUDE_DIRS}
 )
 
 target_link_libraries(
     ${TARGET_NAME}
-    Qt5::Core
-    Qt5::DBus
-    KF5::ConfigCore
-    KF5::WindowSystem
-    KF5::GlobalAccel
-    dtkcore
-    ${DtkCore_LIBRARIES}
+    Qt6::Core
+    Qt6::DBus
+    KF6::ConfigCore
+    KF6::WindowSystem
+    KF6::GlobalAccel
+    Dtk6::Core
+    ${Dtk6Core_LIBRARIES}
     ${GSETTINGS_LDFLAGS}
 )
 

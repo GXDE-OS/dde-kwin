@@ -1,4 +1,4 @@
-﻿#ifndef DEEPINWMFAKER_H
+#ifndef DEEPINWMFAKER_H
 #define DEEPINWMFAKER_H
 
 #include <QAction>
@@ -171,6 +171,12 @@ private:
     QString getWorkspaceBackgroundForMonitor(const int index,const QString &strMonitorName) const;                    // index 为工作区索引，strMonitorName为显示器的名称
     void setWorkspaceBackgroundForMonitor(const int index, const QString &strMonitorName, const QString &uri) const;         // index 为工作区索引，strMonitorName为显示器的名称，uri为图片资源
     bool isX11Platform();
+
+    // KF6 兼容性辅助方法
+    int getCurrentDesktop() const;
+    int getNumberOfDesktops() const;
+    void setCurrentDesktop(int desktop);
+    quint32 getActiveWindow() const;
 #ifndef DISABLE_DEEPIN_WM
     void onGsettingsDDEAppearanceChanged(const QString &key);
     void onGsettingsDDEZoneChanged(const QString &key);
@@ -181,7 +187,8 @@ private:
     void updateCursorConfig();
     bool maybeShowWarningDialog();
 
-    KWindowSystem *m_windowSystem;
+    // KF6: KWindowSystem 不再需要实例,所有方法都是静态的
+    // KWindowSystem *m_windowSystem;  // 已移除
     KConfig *m_deepinWMConfig;
     KConfigGroup *m_deepinWMGeneralGroup;
     KConfigGroup *m_deepinWMWorkspaceBackgroundGroup;
